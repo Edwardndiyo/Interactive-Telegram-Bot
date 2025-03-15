@@ -1,152 +1,6 @@
 # from fastapi import FastAPI
 # import telegram
 # from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-# from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, CallbackQueryHandler
-# import random
-# import json
-# import os
-# from dotenv import load_dotenv
-
-# app = FastAPI()
-# load_dotenv()
-# TOKEN = os.getenv("BOT_TOKEN")
-# bot = telegram.Bot(token=TOKEN)
-
-# # Mock Database for Products
-# products_db = {
-#     "home_appliances": [
-#         {"id": 1, "name": "Air Conditioner", "price": "$300", "specs": "1.5HP, Inverter Technology", "image": "https://example.com/ac.jpg"},
-#         {"id": 2, "name": "Refrigerator", "price": "$500", "specs": "250L, Double Door", "image": "https://example.com/fridge.jpg"},
-#     ],
-#     "clothes": [
-#         {"id": 3, "name": "Men’s Suit", "price": "$120", "specs": "Slim Fit, Black", "image": "https://example.com/suit.jpg"},
-#         {"id": 4, "name": "Women’s Dress", "price": "$80", "specs": "Evening Gown, Red", "image": "https://example.com/dress.jpg"},
-#     ],
-#     "gadgets": [
-#         {"id": 5, "name": "Smartphone", "price": "$1000", "specs": "128GB, 8GB RAM, 5G Enabled", "image": "https://pin.it/6ZlSp3cYJ"},
-#         {"id": 6, "name": "Smartphone", "price": "$1000", "specs": "128GB, 8GB RAM, 5G Enabled", "image": "https://pin.it/6ZlSp3cYJ"},
-#         {"id": 7, "name": "Smartphone", "price": "$1000", "specs": "128GB, 8GB RAM, 5G Enabled", "image": "https://pin.it/6ZlSp3cYJ"},
-#         {"id": 8, "name": "Smartphone", "price": "$1000", "specs": "128GB, 8GB RAM, 5G Enabled", "image": "https://pin.it/6ZlSp3cYJ"},
-#         {"id": 9, "name": "Wireless Earbuds", "price": "$150", "specs": "Noise Cancelling, Bluetooth 5.0", "image": "https://example.com/earbuds.jpg"},
-#     ],
-#     "food": [
-#         {"id": 10, "name": "Pizza", "price": "$10", "specs": "Pepperoni, Large Size", "image": "https://example.com/pizza.jpg"},
-#         {"id": 11, "name": "Burger", "price": "$5", "specs": "Cheese, Beef Patty", "image": "https://example.com/burger.jpg"},
-#     ],
-# }
-# users = {
-#     # Example: "user_id": {"email": "test@example.com", "authenticated": False, "otp": None}
-# }
-
-# # Store users' selected categories before search
-# user_selected_category = {}
-
-# async def start(update: Update, context: CallbackContext):
-#     """ Display main menu with options """
-#     keyboard = [
-#         [InlineKeyboardButton("Search Product 🔍", callback_data="search_product"), 
-#          InlineKeyboardButton("Orders 📦", callback_data="orders")],
-#         [InlineKeyboardButton("User Profile 👤", callback_data="profile"), 
-#          InlineKeyboardButton("Quick Comparison ⚖️", callback_data="compare")],
-#         [InlineKeyboardButton("AI Assistant 🤖", callback_data="ai_assistant")]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.message.reply_text("Welcome to Deimr Stella! Please select an option:", reply_markup=reply_markup)
-
-# async def search_product(update: Update, context: CallbackContext):
-#     """ Ask user to select a product category first """
-#     keyboard = [
-#         [InlineKeyboardButton(" Home Appliances", callback_data="category_home_appliances"),
-#          InlineKeyboardButton(" Clothes", callback_data="category_clothes")],
-#         [InlineKeyboardButton(" Gadgets", callback_data="category_gadgets"),
-#          InlineKeyboardButton(" Food", callback_data="category_food")]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.callback_query.message.reply_text("Please select a category:", reply_markup=reply_markup)
-
-# async def handle_category_selection(update: Update, context: CallbackContext):
-#     """ Store selected category and ask for search query """
-#     query = update.callback_query
-#     await query.answer()
-
-#     user_id = query.message.chat_id
-#     category = query.data.split("_")[1]  # Extract category name
-
-#     user_selected_category[user_id] = category  # Store selected category
-#     await query.message.reply_text(f"You selected *{category.replace('_', ' ').title()}*.\n\nNow, please enter the product name you're looking for.", parse_mode="Markdown")
-
-# async def handle_search_query(update: Update, context: CallbackContext):
-#     """ Search within selected category and return results """
-#     user_id = update.message.chat_id
-#     query_text = update.message.text.lower()
-
-#     if user_id not in user_selected_category:
-#         await update.message.reply_text("❌ Please select a category first by clicking 'Search Product 🔍'.")
-#         return
-
-#     category = user_selected_category[user_id]
-#     matching_products = [p for p in products_db[category] if query_text in p["name"].lower()]
-
-#     if not matching_products:
-#         await update.message.reply_text(f"❌ No matching products found in *{category.replace('_', ' ').title()}*.")
-#         return
-
-#     for product in matching_products:
-#         message = f"📌 *{product['name']}*\n💰 Price: {product['price']}\n🛠 Specs: {product['specs']}"
-#         keyboard = [[InlineKeyboardButton("🛒 Order Now", callback_data=f"order_{product['id']}")]]
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-
-#         await context.bot.send_photo(
-#             chat_id=update.message.chat_id,
-#             photo=product["image"],
-#             caption=message,
-#             parse_mode="Markdown",
-#             reply_markup=reply_markup
-#         )
-
-# async def button_handler(update: Update, context: CallbackContext):
-#     """ Handle menu button clicks """
-#     query = update.callback_query
-#     await query.answer()
-
-#     if query.data == "search_product":
-#         await search_product(update, context)
-#     elif query.data.startswith("category_"):
-#         await handle_category_selection(update, context)
-#     elif query.data == "orders":
-#         await check_authentication(update, context, "orders")
-#     elif query.data == "profile":
-#         await check_authentication(update, context, "profile")
-#     elif query.data == "compare":
-#         await query.message.reply_text("Enter two product names separated by a comma.")
-#     elif query.data == "ai_assistant":
-#         await query.message.reply_text("AI Assistant coming soon...")
-
-# async def check_authentication(update: Update, context: CallbackContext, section: str):
-#     """ Check if user is authenticated; if not, ask for email """
-#     user_id = update.callback_query.message.chat_id
-#     if users.get(user_id, {}).get("authenticated"):
-#         await update.callback_query.message.reply_text(f"✅ You are authenticated! Accessing {section}...")
-#     else:
-#         users[user_id] = {"authenticated": True}
-#         await update.callback_query.message.reply_text("Please enter your email to continue.")
-
-# app = Application.builder().token(TOKEN).build()
-# app.add_handler(CommandHandler("start", start))
-# app.add_handler(CallbackQueryHandler(button_handler))
-# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_query))  # Handle product searches
-
-# if __name__ == "__main__":
-#     app.run_polling()
-
-
-
-
-
-
-# from fastapi import FastAPI
-# import telegram
-# from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 # from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler
 # import os
 # from dotenv import load_dotenv
@@ -307,174 +161,7 @@
 #     app.run_polling()
 
 
-
-
-
-
-# from fastapi import FastAPI
-# import telegram
-# from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-# from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, CallbackQueryHandler
-# import os
-# from dotenv import load_dotenv
-
-# app = FastAPI()
-# load_dotenv()
-# TOKEN = os.getenv("BOT_TOKEN")
-# bot = telegram.Bot(token=TOKEN)
-
-# # Mock Database for Products
-# products_db = {
-#     "home_appliances": [
-#         {"id": 1, "name": "Air Conditioner", "price": "$300", "specs": "1.5HP, Inverter Technology", "image": "https://example.com/ac.jpg"},
-#         {"id": 2, "name": "Refrigerator", "price": "$500", "specs": "250L, Double Door", "image": "https://example.com/fridge.jpg"},
-#     ],
-#     "clothes": [
-#         {"id": 3, "name": "Men’s Suit", "price": "$120", "specs": "Slim Fit, Black", "image": "https://example.com/suit.jpg"},
-#         {"id": 4, "name": "Women’s Dress", "price": "$80", "specs": "Evening Gown, Red", "image": "https://example.com/dress.jpg"},
-#     ],
-#     "gadgets": [
-#         {"id": 5, "name": "Smartphone", "price": "$1000", "specs": "128GB, 8GB RAM, 5G Enabled", "image": "https://pin.it/6ZlSp3cYJ"},
-#         {"id": 6, "name": "Wireless Earbuds", "price": "$150", "specs": "Noise Cancelling, Bluetooth 5.0", "image": "https://example.com/earbuds.jpg"},
-#         {"id": 7, "name": "Smart Watch", "price": "$200", "specs": "Waterproof, Heart Rate Monitor", "image": "https://example.com/watch.jpg"},
-#     ],
-#     "food": [
-#         {"id": 8, "name": "Pizza", "price": "$10", "specs": "Pepperoni, Large Size", "image": "https://example.com/pizza.jpg"},
-#         {"id": 9, "name": "Burger", "price": "$5", "specs": "Cheese, Beef Patty", "image": "https://example.com/burger.jpg"},
-#     ],
-# }
-
-# users = {}
-# user_selected_category = {}
-
-# async def start(update: Update, context: CallbackContext):
-#     """ Display main menu with options """
-#     keyboard = [
-#         [InlineKeyboardButton("Search Product 🔍", callback_data="search_product"), 
-#          InlineKeyboardButton("Orders 📦", callback_data="orders")],
-#         [InlineKeyboardButton("User Profile 👤", callback_data="profile"), 
-#          InlineKeyboardButton("Quick Comparison ⚖️", callback_data="compare")],
-#         [InlineKeyboardButton("AI Assistant 🤖", callback_data="ai_assistant")]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.message.reply_text("Welcome to Deimr Stella! Please select an option:", reply_markup=reply_markup)
-
-# async def search_product(update: Update, context: CallbackContext):
-#     """ Ask user to select a product category first """
-#     keyboard = [
-#         [InlineKeyboardButton(" Home Appliances", callback_data="category_home_appliances"),
-#          InlineKeyboardButton(" Clothes", callback_data="category_clothes")],
-#         [InlineKeyboardButton(" Gadgets", callback_data="category_gadgets"),
-#          InlineKeyboardButton(" Food", callback_data="category_food")],
-#         [InlineKeyboardButton("🔙 Back", callback_data="back_main_menu")]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.callback_query.message.reply_text("Please select a category:", reply_markup=reply_markup)
-
-# async def handle_category_selection(update: Update, context: CallbackContext):
-#     """ Store selected category and ask for search query """
-#     query = update.callback_query
-#     await query.answer()
-
-#     user_id = query.message.chat_id
-#     category = query.data.split("_")[1]  # Extract category name
-
-#     user_selected_category[user_id] = category  # Store selected category
-#     await query.message.reply_text(
-#         f"You selected *{category.replace('_', ' ').title()}*.\n\nNow, please enter the product name you're looking for.",
-#         parse_mode="Markdown"
-#     )
-
-# async def handle_search_query(update: Update, context: CallbackContext):
-#     """ Search within selected category and return results """
-#     user_id = update.message.chat_id
-#     query_text = update.message.text.lower()
-
-#     if user_id not in user_selected_category:
-#         await update.message.reply_text("❌ Please select a category first by clicking 'Search Product 🔍'.")
-#         return
-
-#     category = user_selected_category[user_id]
-#     matching_products = [p for p in products_db[category] if query_text in p["name"].lower()]
-
-#     if not matching_products:
-#         keyboard = [[InlineKeyboardButton("🔙 Back to Categories", callback_data="search_product")]]
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-#         await update.message.reply_text(f"❌ No matching products found in *{category.replace('_', ' ').title()}*.", reply_markup=reply_markup)
-#         return
-
-#     for product in matching_products:
-#         message = f"📌 *{product['name']}*\n💰 Price: {product['price']}\n🛠 Specs: {product['specs']}"
-#         keyboard = [
-#             [InlineKeyboardButton("🛒 Order Now", callback_data=f"order_{product['id']}")],
-#             [InlineKeyboardButton("🔙 Back to Categories", callback_data="search_product")]
-#         ]
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-
-#         await context.bot.send_photo(
-#             chat_id=update.message.chat_id,
-#             photo=product["image"],
-#             caption=message,
-#             parse_mode="Markdown",
-#             reply_markup=reply_markup
-#         )
-
-# async def button_handler(update: Update, context: CallbackContext):
-#     """ Handle menu button clicks """
-#     query = update.callback_query
-#     await query.answer()
-
-#     if query.data == "search_product":
-#         await search_product(update, context)
-#     elif query.data.startswith("category_"):
-#         await handle_category_selection(update, context)
-#     elif query.data == "orders":
-#         await check_authentication(update, context, "orders")
-#     elif query.data == "profile":
-#         await check_authentication(update, context, "profile")
-#     elif query.data == "compare":
-#         await query.message.reply_text("Enter two product names separated by a comma.")
-#     elif query.data == "ai_assistant":
-#         await query.message.reply_text("AI Assistant coming soon...")
-#     elif query.data == "back_main_menu":
-#         await start(update, context)
-
-# async def check_authentication(update: Update, context: CallbackContext, section: str):
-#     """ Check if user is authenticated; if not, ask for email """
-#     user_id = update.callback_query.message.chat_id
-#     if users.get(user_id, {}).get("authenticated"):
-#         await update.callback_query.message.reply_text(f"✅ You are authenticated! Accessing {section}...")
-#     else:
-#         users[user_id] = {"authenticated": True}
-#         await update.callback_query.message.reply_text("Please enter your email to continue.")
-
-# app = Application.builder().token(TOKEN).build()
-# app.add_handler(CommandHandler("start", start))
-# app.add_handler(CallbackQueryHandler(button_handler))
-# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_query))
-
-# if __name__ == "__main__":
-#     app.run_polling()
-
-
-
-
-# from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters
-# from config import TOKEN
-# from handlers.start import start
-# from handlers.search import search_product, handle_category_selection, handle_search_query
-# from app.services.authentication import authenticate_user
-
-# app = Application.builder().token(TOKEN).build()
-
-# app.add_handler(CommandHandler("start", start))
-# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
-# app.add_handler(CallbackQueryHandler(handle_category_selection, pattern="^category_"))
-# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_query))
-
-# if __name__ == "__main__":
-#     app.run_polling()
-
+# first implementation before attempting to make it modular up here
 
 
 
@@ -482,17 +169,36 @@
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from config import TOKEN
 from handlers.start import start
-from handlers.search import search_product, search_handlers  # Import the handler list
+from handlers.explore import explore_product, explore_handlers  # Import the handler list
+from handlers.search import search_product, search_handlers
+from handlers.orders import orders_handlers  # Import the orders handlers
 from services.authentication import authenticate_user
 
+# Initialize the bot application
 app = Application.builder().token(TOKEN).build()
 
+# Register the /start command handler
 app.add_handler(CommandHandler("start", start))
+
+# Register the explore_product handler
+app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
+
+# Register the search_product handler
 app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
+
+
+# Register all handlers from explore.py
+for handler in explore_handlers:
+    app.add_handler(handler)
 
 # Register all handlers from search.py
 for handler in search_handlers:
     app.add_handler(handler)
 
+# Register all handlers from orders.py
+for handler in orders_handlers:
+    app.add_handler(handler)
+
+# Run the bot
 if __name__ == "__main__":
     app.run_polling()

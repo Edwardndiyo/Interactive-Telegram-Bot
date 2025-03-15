@@ -1,177 +1,130 @@
-# from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
-# from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
-# from utils.database import products_db
-# from utils.helpers import user_selected_category
-
-# async def search_product(update: Update, context: CallbackContext):
-#     """ Ask user to select a product category first """
-#     keyboard = [
-#         [InlineKeyboardButton(" Home Appliances", callback_data="category_home_appliances"),
-#          InlineKeyboardButton(" Clothes", callback_data="category_clothes")],
-#         [InlineKeyboardButton(" Gadgets", callback_data="category_gadgets"),
-#          InlineKeyboardButton(" Food", callback_data="category_food")]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.callback_query.message.reply_text("Please select a category:", reply_markup=reply_markup)
-
-# async def handle_category_selection(update: Update, context: CallbackContext):
-#     """ Store selected category and ask for search query """
-#     query = update.callback_query
-#     await query.answer()
-
-#     user_id = query.message.chat_id
-#     category = query.data.split("_")[1]  # Extract category name
-
-#     user_selected_category[user_id] = category  # Store selected category
-#     await query.message.reply_text(f"You selected *{category.replace('_', ' ').title()}*.\n\nNow, please enter the product name you're looking for.", parse_mode="Markdown")
-
-# async def handle_search_query(update: Update, context: CallbackContext):
-#     """ Search within selected category and return results """
-#     user_id = update.message.chat_id
-#     query_text = update.message.text.lower()
-
-#     if user_id not in user_selected_category:
-#         await update.message.reply_text("❌ Please select a category first by clicking 'Search Product 🔍'.")
-#         return
-
-#     category = user_selected_category[user_id]
-#     matching_products = [p for p in products_db[category] if query_text in p["name"].lower()]
-
-#     if not matching_products:
-#         await update.message.reply_text(f"❌ No matching products found in *{category.replace('_', ' ').title()}*. Try another search.")
-#         return
-
-#     for product in matching_products:
-#         message = f"📌 *{product['name']}*\n💰 Price: {product['price']}\n🛠 Specs: {product['specs']}"
-#         keyboard = [[InlineKeyboardButton("🛒 Order Now", callback_data=f"order_{product['id']}")]]
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-
-#         await context.bot.send_photo(
-#             chat_id=update.message.chat_id,
-#             photo=product["image"],
-#             caption=message,
-#             parse_mode="Markdown",
-#             reply_markup=reply_markup
-#         )
-
-# handler = CallbackQueryHandler(search_product, pattern="^search_product$")
-# category_handler = CallbackQueryHandler(handle_category_selection, pattern="^category_")
-# search_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, handle_search_query)
-
-
-
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
-from utils.database import products_db
-from utils.helpers import user_selected_category
+
+# Mock function to fetch matching products (replace with actual database query)
+def fetch_matching_products(product_name: str):
+    """Simulate fetching top 3 matching products."""
+    return [
+        {"name": "Product 1", "image": "https://example.com/product1.jpg", "price": "$50", "details": "Color: Red, Size: M"},
+        {"name": "Product 2", "image": "https://example.com/product2.jpg", "price": "$60", "details": "Color: Blue, Size: L"},
+        {"name": "Product 3", "image": "https://example.com/product3.jpg", "price": "$70", "details": "Color: Green, Size: S"},
+    ]
 
 async def search_product(update: Update, context: CallbackContext):
-    """ Ask user to select a product category first """
-    keyboard = [
-        [InlineKeyboardButton("🖥️ Gadgets", callback_data="category_gadgets"),
-         InlineKeyboardButton("🏠 Home Appliances", callback_data="category_home_appliances")],
-        [InlineKeyboardButton("👕 Clothes", callback_data="category_clothes"),
-         InlineKeyboardButton("🍕 Food", callback_data="category_food")]
-    ]
+    """Step 1: Ask the user to enter the product name."""
+    await update.message.reply_text("🔍 Please enter the product name you are looking for.")
+
+    # Set the state to wait for the product name
+    context.user_data["state"] = "awaiting_product_name"
+
+async def handle_product_name(update: Update, context: CallbackContext):
+    """Step 2: Handle the product name input and display top 3 results."""
+    # Check if the current state is "awaiting_product_name"
+    if context.user_data.get("state") != "awaiting_product_name":
+        return  # Ignore if not in the correct state
+
+    product_name = update.message.text
+
+    # Fetch top 3 matching products
+    matching_products = fetch_matching_products(product_name)
+
+    if not matching_products:
+        await update.message.reply_text(
+            "❌ No products found. Please try again with a different name.",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 Search Again", callback_data="search_again")],
+                [InlineKeyboardButton("🏠 Back to Main Menu", callback_data="main_menu")],
+            ])
+        )
+        return
+
+    # Display the top 3 results with images and buttons
+    response_text = "Here are the top results for your search:\n\n"
+    buttons = []
+
+    for i, product in enumerate(matching_products):
+        response_text += f"{i + 1}️⃣ {product['name']} 🖼️\n"
+        buttons.append(InlineKeyboardButton(f"{i + 1}️⃣", callback_data=f"product_{i + 1}"))
+
+    # Add "Search Again" and "Back to Main Menu" buttons
+    buttons.append(InlineKeyboardButton("🔄 5️⃣ Search Again", callback_data="search_again"))
+    buttons.append(InlineKeyboardButton("🏠 6️⃣ Back to Main Menu", callback_data="main_menu"))
+
+    # Chunk buttons into rows of 2
+    keyboard = [buttons[i:i + 2] for i in range(0, len(buttons), 2)]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.callback_query.message.reply_text("Please select a category:", reply_markup=reply_markup)
 
-async def handle_category_selection(update: Update, context: CallbackContext):
-    """ Store selected category and ask for subcategories """
-    query = update.callback_query
-    await query.answer()
-
-    user_id = query.message.chat_id
-    category = query.data.split("_")[1]  # Extract category name
-
-    if category not in products_db:
-        await query.message.reply_text("❌ Invalid category selected.")
-        return
-
-    user_selected_category[user_id] = {"category": category}  # Store selected category
-
-    subcategories = list(products_db[category].keys())  # Get subcategories
-
-    keyboard = [[InlineKeyboardButton(sub.title(), callback_data=f"subcategory_{sub}")] for sub in subcategories]
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="search_product")])  # Back button
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.reply_text(f"You selected *{category.title()}*. Now, choose a type:", reply_markup=reply_markup)
-
-async def handle_subcategory_selection(update: Update, context: CallbackContext):
-    """ Store selected subcategory and ask for brands """
-    query = update.callback_query
-    await query.answer()
-
-    user_id = query.message.chat_id
-    subcategory = query.data.split("_")[1]  # Extract subcategory
-
-    user_category = user_selected_category.get(user_id, {}).get("category")
-
-    if not user_category or subcategory not in products_db[user_category]:
-        await query.message.reply_text("❌ Invalid subcategory.")
-        return
-
-    user_selected_category[user_id]["subcategory"] = subcategory  # Store selected subcategory
-
-    brands = list(products_db[user_category][subcategory].keys())  # Get brands
-
-    keyboard = [[InlineKeyboardButton(brand, callback_data=f"brand_{brand}")] for brand in brands]
-    keyboard.append([InlineKeyboardButton("🔙 Back", callback_data=f"category_{user_category}")])  # Back button
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.reply_text(f"You selected *{subcategory.title()}*. Now, choose a brand:", reply_markup=reply_markup)
-
-async def handle_brand_selection(update: Update, context: CallbackContext):
-    """ Show products after brand selection """
-    query = update.callback_query
-    await query.answer()
-
-    user_id = query.message.chat_id
-    brand = query.data.split("_")[1]  # Extract brand
-
-    user_category = user_selected_category.get(user_id, {}).get("category")
-    user_subcategory = user_selected_category.get(user_id, {}).get("subcategory")
-
-    if not user_category or not user_subcategory or brand not in products_db[user_category][user_subcategory]:
-        await query.message.reply_text("❌ Invalid brand selection.")
-        return
-
-    user_selected_category[user_id]["brand"] = brand  # Store brand
-
-    products = products_db[user_category][user_subcategory][brand][:4]  # Get top 4 products
-
-    if not products:
-        await query.message.reply_text(f"❌ No products found for {brand}.")
-        return
-
-    for product in products:
-        message = f"📌 *{product['name']}*\n💰 Price: {product['price']}\n🛠 Specs: {product['specs']}"
-        keyboard = [[InlineKeyboardButton("🛒 Order Now", callback_data=f"order_{product['id']}")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await context.bot.send_photo(
-            chat_id=user_id,
+    # Send the response with images (Telegram supports sending images with captions)
+    for i, product in enumerate(matching_products):
+        await update.message.reply_photo(
             photo=product["image"],
-            caption=message,
-            parse_mode="Markdown",
-            reply_markup=reply_markup
+            caption=f"{i + 1}️⃣ {product['name']}"
         )
 
-    # Show back button to brand selection
-    keyboard = [[InlineKeyboardButton("🔙 Back", callback_data=f"subcategory_{user_subcategory}")]]
+    await update.message.reply_text(response_text, reply_markup=reply_markup)
+
+    # Set the state to wait for product selection
+    context.user_data["state"] = "awaiting_product_selection"
+    context.user_data["matching_products"] = matching_products
+
+async def handle_product_selection(update: Update, context: CallbackContext):
+    """Step 4: Handle the user's selection of a product."""
+    query = update.callback_query
+    await query.answer()
+
+    user_choice = query.data
+
+    if user_choice == "search_again":
+        # Repeat Step 1
+        await search_product(update, context)
+    elif user_choice == "main_menu":
+        # Return to the main menu
+        await show_main_menu(update, context)
+    else:
+        # Extract the selected product index
+        product_index = int(user_choice.split("_")[-1]) - 1
+        matching_products = context.user_data.get("matching_products")
+
+        if not matching_products or product_index >= len(matching_products):
+            await query.edit_message_text("❌ Invalid selection. Please try again.")
+            return
+
+        # Proceed to Step 5: Display product details
+        selected_product = matching_products[product_index]
+        await display_product_details(update, context, selected_product)
+
+async def display_product_details(update: Update, context: CallbackContext, product: dict):
+    """Step 5: Display the selected product's details."""
+    query = update.callback_query
+
+    # Prepare the response text
+    response_text = (
+        f"📌 {product['name']} 🖼️🖼️🖼️\n\n"
+        f"💰 Price: {product['price']}\n"
+        f"📜 Attributes: {product['details']}\n\n"
+    )
+
+    # Add an "Order Product" button (link to the website)
+    keyboard = [
+        [InlineKeyboardButton("🛒 Order Product", url="https://example.com/order")],
+        [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")],
+    ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.message.reply_text("Go back?", reply_markup=reply_markup)
 
-# category_handler = CallbackQueryHandler(handle_category_selection, pattern="^category_")
-# subcategory_handler = CallbackQueryHandler(handle_subcategory_selection, pattern="^subcategory_")
-# brand_handler = CallbackQueryHandler(handle_brand_selection, pattern="^brand_")
-# Remove dispatcher.add_handler(...)
-# Instead, define the handlers and return them as a list
+    # Send the product images (if available)
+    await query.message.reply_photo(
+        photo=product["image"],
+        caption=response_text,
+        reply_markup=reply_markup
+    )
 
+async def show_main_menu(update: Update, context: CallbackContext):
+    """Return to the main menu."""
+    # Replace this with your actual main menu implementation
+    await update.message.reply_text("🏠 Welcome to the main menu!")
+
+# Register handlers
 search_handlers = [
-    CallbackQueryHandler(handle_category_selection, pattern="^category_"),
-    CallbackQueryHandler(handle_subcategory_selection, pattern="^subcategory_"),
-    CallbackQueryHandler(handle_brand_selection, pattern="^brand_"),
+    MessageHandler(filters.TEXT & ~filters.COMMAND, handle_product_name),  # No pattern argument
+    CallbackQueryHandler(handle_product_selection, pattern="^product_|search_again|main_menu$"),
 ]
-
