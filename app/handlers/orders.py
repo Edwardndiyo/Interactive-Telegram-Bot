@@ -5,9 +5,7 @@ from utils.database import users_db
 
 
 # Store authentication status (user_id: expiry_time)
-authenticated_users = {
-
-}
+authenticated_users = {}
 
 # Helper function to chunk buttons into rows of 2
 def chunk_buttons(buttons, row_size=2):
@@ -26,12 +24,12 @@ async def start_orders(update: Update, context: CallbackContext):
     await message.reply_text("Please enter your registered email address:")
 
     # Set the state to wait for email
-    context.user_data["state"] = "awaiting_email"
+    context.user_data["state"] = "orders:awaiting_email"
 
 # Step 2: Handle Email Input
 async def handle_email(update: Update, context: CallbackContext):
     """Handle email input."""
-    if context.user_data.get("state") != "awaiting_email":
+    if context.user_data.get("state") != "orders:awaiting_email":
         return  # Ignore if not in the correct state
 
     email = update.message.text.strip().lower()
@@ -50,7 +48,7 @@ async def handle_email(update: Update, context: CallbackContext):
         )
 
         # Set the state to wait for OTP
-        context.user_data["state"] = "awaiting_otp"
+        context.user_data["state"] = "orders:awaiting_otp"
     else:
         # Prompt the user to register
         keyboard = [
@@ -66,7 +64,7 @@ async def handle_email(update: Update, context: CallbackContext):
 # Step 3: Handle OTP Input
 async def handle_otp(update: Update, context: CallbackContext):
     """Handle OTP input."""
-    if context.user_data.get("state") != "awaiting_otp":
+    if context.user_data.get("state") != "orders:awaiting_otp":
         return  # Ignore if not in the correct state
 
     otp = update.message.text
@@ -139,12 +137,12 @@ async def track_order(update: Update, context: CallbackContext):
     await query.edit_message_text("Enter your Order ID to track your order:")
 
     # Set the state to wait for Order ID
-    context.user_data["state"] = "awaiting_order_id"
+    context.user_data["state"] = "orders:awaiting_order_id"
 
 # Step 7: Handle Order ID Input
 async def handle_order_id(update: Update, context: CallbackContext):
     """Handle order ID input."""
-    if context.user_data.get("state") != "awaiting_order_id":
+    if context.user_data.get("state") != "orders:awaiting_order_id":
         return  # Ignore if not in the correct state
 
     email = context.user_data.get("email")
@@ -192,7 +190,7 @@ async def contact_seller(update: Update, context: CallbackContext):
     await query.edit_message_text("Please enter your message for the seller:")
 
     # Set the state to wait for the message
-    context.user_data["state"] = "awaiting_seller_message"
+    context.user_data["state"] = "orders:awaiting_seller_message"
 
 # view order history 
 async def view_order_history(update: Update, context: CallbackContext):
@@ -236,7 +234,7 @@ async def chat_with_seller(update: Update, context: CallbackContext):
     await query.edit_message_text("Please enter your message for the seller:")
 
     # Set the state to wait for the message
-    context.user_data["state"] = "awaiting_seller_message"
+    context.user_data["state"] = "orders:awaiting_seller_message"
 
 # Step 9: Handle Seller Message
 async def handle_seller_message(update: Update, context: CallbackContext):
@@ -273,7 +271,7 @@ async def handle_seller_message(update: Update, context: CallbackContext):
 # Step 10: Handle Seller Response
 async def handle_seller_response(update: Update, context: CallbackContext):
     """Relay the seller's response to the user."""
-    if context.user_data.get("state") != "awaiting_seller_response":
+    if context.user_data.get("state") != "orders:awaiting_seller_response":
         return  # Ignore if not in the correct state
 
     seller_response = update.message.text
@@ -296,15 +294,15 @@ async def handle_message(update: Update, context: CallbackContext):
     print(f"Current state: {state}")  # Debugging: Print the current state
     print(f"Received message: {update.message.text}")  # Debugging: Print the received message
 
-    if state == "awaiting_email":
+    if state == "orders:awaiting_email":
         await handle_email(update, context)
-    elif state == "awaiting_otp":
+    elif state == "orders:awaiting_otp":
         await handle_otp(update, context)
-    elif state == "awaiting_order_id":
+    elif state == "orders:awaiting_order_id":
         await handle_order_id(update, context)
-    elif state == "awaiting_seller_message":
+    elif state == "orders:awaiting_seller_message":
         await handle_seller_message(update, context)
-    elif state == "awaiting_seller_response":
+    elif state == "orders:awaiting_seller_response":
         await handle_seller_response(update, context)
     else:
         # Handle unexpected messages

@@ -15,6 +15,22 @@ users_db = {
     }
 }
 
+# Mock function to fetch matching products (replace with actual database query)
+def fetch_matching_products(product_name: str):
+    """Simulate fetching top 3 matching products."""
+    return [
+        #   {"name": "iphone 15", "image": "https://pin.it/6bukAcfm5", "price": "$50", "details": "Color: Red, Size: M"},
+        # {"name": "macbook pro", "image": "https://pin.it/6bukAcfm5", "price": "$60", "details": "Color: Blue, Size: L"},
+        # {"name": "samsung television", "image": "https://pin.it/6bukAcfm5", "price": "$70", "details": "Color: Green, Size: S"},
+        #  {"name": "Apple television", "image": "https://pin.it/6bukAcfm5", "price": "$100", "details": "Color: Black, Size: S"},
+         {"id": "ORD123", "name": "iPhone 14 Pro", "image": "https://pin.it/6bukAcfm5", "price": "$999", "details": "Color: Red, Size: M"},
+        {"id": "ORD456", "name": "Samsung Galaxy S23", "image": "https://pin.it/6bukAcfm5", "price": "$899", "details": "Color: Blue, Size: L"},
+        {"id": "ORD789", "name": "MacBook Air M2", "image": "https://pin.it/6bukAcfm5", "price": "$1199", "details": "Color: Green, Size: S"},
+        {"id": "ORD789", "name": "MacBook Air M2", "image": "https://pin.it/6bukAcfm5", "price": "$1199", "details": "Color: Green, Size: S"},
+
+    ]
+
+
 # Mock data for products
 products_db = {
     "gadgets": {

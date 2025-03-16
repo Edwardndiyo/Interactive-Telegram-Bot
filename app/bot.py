@@ -166,13 +166,91 @@
 
 
 
+# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+# from config import TOKEN
+# from handlers.start import start
+# from handlers.explore import explore_product, explore_handlers  # Import the handler list
+# from handlers.search import search_product, search_handlers
+# from handlers.orders import orders_handlers  # Import the orders handlers
+# from services.authentication import authenticate_user
+
+# # Initialize the bot application
+# app = Application.builder().token(TOKEN).build()
+
+# # Register the /start command handler
+# app.add_handler(CommandHandler("start", start))
+
+# # Register the explore_product handler
+# app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
+
+# # Register the search_product handler
+# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
+
+
+# # Register all handlers from explore.py
+# for handler in explore_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from search.py
+# for handler in search_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from orders.py
+# for handler in orders_handlers:
+#     app.add_handler(handler)
+
+# # Run the bot
+# if __name__ == "__main__":
+#     app.run_polling()
+
+
+
+
+# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+# from config import TOKEN
+# from handlers.start import start
+# from handlers.explore import explore_product, explore_handlers  # Import the handler list
+# from handlers.search import search_product, search_handlers
+# from handlers.orders import orders_handlers  # Import the orders handlers
+# from services.authentication import authenticate_user
+
+# # Initialize the bot application
+# app = Application.builder().token(TOKEN).build()
+
+# # Register the /start command handler
+# app.add_handler(CommandHandler("start", start))
+
+# # Register the explore_product handler
+# app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
+
+# # Register the search_product handler
+# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
+
+# # Register all handlers from explore.py
+# for handler in explore_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from orders.py first
+# for handler in orders_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from search.py next
+# for handler in search_handlers:
+#     app.add_handler(handler)
+
+# # Run the bot
+# if __name__ == "__main__":
+#     app.run_polling()
+
+
+
+
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from config import TOKEN
 from handlers.start import start
-from handlers.explore import explore_product, explore_handlers  # Import the handler list
+from handlers.explore import explore_product, explore_handlers
 from handlers.search import search_product, search_handlers
-from handlers.orders import orders_handlers  # Import the orders handlers
-from services.authentication import authenticate_user
+from handlers.orders import orders_handlers
 
 # Initialize the bot application
 app = Application.builder().token(TOKEN).build()
@@ -186,17 +264,16 @@ app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$
 # Register the search_product handler
 app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
 
-
 # Register all handlers from explore.py
 for handler in explore_handlers:
     app.add_handler(handler)
 
-# Register all handlers from search.py
-for handler in search_handlers:
+# Register all handlers from orders.py first
+for handler in orders_handlers:
     app.add_handler(handler)
 
-# Register all handlers from orders.py
-for handler in orders_handlers:
+# Register all handlers from search.py next
+for handler in search_handlers:
     app.add_handler(handler)
 
 # Run the bot
