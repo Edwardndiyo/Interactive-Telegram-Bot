@@ -317,5 +317,5 @@ orders_handlers = [
     CallbackQueryHandler(track_order, pattern="^track_order$"),
      CallbackQueryHandler(contact_seller, pattern="^contact_seller_"),
     CallbackQueryHandler(chat_with_seller, pattern="^chat_with_seller$"),
-    MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message),
+    # MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message),
 ]

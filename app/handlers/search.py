@@ -80,7 +80,7 @@ async def handle_product_selection(update: Update, context: CallbackContext):
     else:
         # Extract the selected product ID
         product_id = user_choice.split("_")[-1]
-        matching_products = context.user_data.get("search:matching_products")
+        matching_products = context.user_data.get("matching_products")
 
         # Find the selected product
         selected_product = next((p for p in matching_products if p["id"] == product_id), None)
@@ -125,6 +125,6 @@ async def display_product_details(update: Update, context: CallbackContext, prod
 
 # Register handlers
 search_handlers = [
-    MessageHandler(filters.TEXT & ~filters.COMMAND, handle_product_name),  # No pattern argument
+    # MessageHandler(filters.TEXT & ~filters.COMMAND, handle_product_name),  # No pattern argument
     CallbackQueryHandler(handle_product_selection, pattern="^product_|search_again|main_menu$"),
 ]

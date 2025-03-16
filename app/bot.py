@@ -206,51 +206,32 @@
 
 
 
-# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
-# from config import TOKEN
-# from handlers.start import start
-# from handlers.explore import explore_product, explore_handlers  # Import the handler list
-# from handlers.search import search_product, search_handlers
-# from handlers.orders import orders_handlers  # Import the orders handlers
-# from services.authentication import authenticate_user
 
-# # Initialize the bot application
-# app = Application.builder().token(TOKEN).build()
-
-# # Register the /start command handler
-# app.add_handler(CommandHandler("start", start))
-
-# # Register the explore_product handler
-# app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
-
-# # Register the search_product handler
-# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
-
-# # Register all handlers from explore.py
-# for handler in explore_handlers:
-#     app.add_handler(handler)
-
-# # Register all handlers from orders.py first
-# for handler in orders_handlers:
-#     app.add_handler(handler)
-
-# # Register all handlers from search.py next
-# for handler in search_handlers:
-#     app.add_handler(handler)
-
-# # Run the bot
-# if __name__ == "__main__":
-#     app.run_polling()
-
-
-
-
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram import Update
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 from config import TOKEN
 from handlers.start import start
 from handlers.explore import explore_product, explore_handlers
 from handlers.search import search_product, search_handlers
 from handlers.orders import orders_handlers
+
+# Global message handler to dispatch messages based on state
+async def handle_global_message(update: Update, context: CallbackContext):
+    """Dispatch messages to the appropriate module based on the current state."""
+    state = context.user_data.get("state")
+    print(f"Current state: {state}")  # Debugging
+
+    if state and state.startswith("orders:"):
+        # Forward to orders.py
+        from handlers.orders import handle_message
+        await handle_message(update, context)
+    elif state and state.startswith("search:"):
+        # Forward to search.py
+        from handlers.search import handle_product_name
+        await handle_product_name(update, context)
+    else:
+        # Handle unexpected messages
+        await update.message.reply_text("Please start the process by selecting an option from the menu.")
 
 # Initialize the bot application
 app = Application.builder().token(TOKEN).build()
@@ -268,13 +249,16 @@ app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$")
 for handler in explore_handlers:
     app.add_handler(handler)
 
-# Register all handlers from orders.py first
+# Register all handlers from orders.py
 for handler in orders_handlers:
     app.add_handler(handler)
 
-# Register all handlers from search.py next
+# Register all handlers from search.py
 for handler in search_handlers:
     app.add_handler(handler)
+
+# Register the global message handler
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))
 
 # Run the bot
 if __name__ == "__main__":
