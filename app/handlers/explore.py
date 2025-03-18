@@ -36,7 +36,7 @@ async def handle_category_selection(update: Update, context: CallbackContext):
     await query.answer()
 
     user_id = query.message.chat_id
-    category = query.data.split("_")[1]  # Extract category name
+    category = "_".join(query.data.split("_")[1:])  # Extracts "home_appliances"
 
     if category not in products_db:
         await query.edit_message_text("❌ Invalid category selected.")
@@ -50,7 +50,7 @@ async def handle_category_selection(update: Update, context: CallbackContext):
 
     # Create buttons for subcategories
     buttons = [InlineKeyboardButton(sub.title(), callback_data=f"subcategory_{sub}") for sub in subcategories]
-    buttons.append(InlineKeyboardButton("🔙 Back", callback_data="search_product"))
+    buttons.append(InlineKeyboardButton("🔙 Back", callback_data="explore_product"))
     keyboard = chunk_buttons(buttons, row_size=2)
     reply_markup = InlineKeyboardMarkup(keyboard)
 

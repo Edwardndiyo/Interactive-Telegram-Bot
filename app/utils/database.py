@@ -2,7 +2,10 @@
 users_db = {
     "ndiyoedward@gmail.com": {
         "name": "Edward",
+        "email": "ndiyoedward@gmail.com",  # Add email to user data
         "otp": "123456",
+        "date_joined": "2023-01-01",  # Add date_joined
+        "reward_points": 100,  # Add reward_points
         "orders": {
             "pending_orders": [
                 {"id": "ORD123", "product": "iPhone 14 Pro", "price": "$999", "status": "Pending", "seller_id": "seller_123"},
@@ -15,20 +18,47 @@ users_db = {
     }
 }
 
+
 # Mock function to fetch matching products (replace with actual database query)
 def fetch_matching_products(product_name: str):
     """Simulate fetching top 3 matching products."""
     return [
-        #   {"name": "iphone 15", "image": "https://pin.it/6bukAcfm5", "price": "$50", "details": "Color: Red, Size: M"},
-        # {"name": "macbook pro", "image": "https://pin.it/6bukAcfm5", "price": "$60", "details": "Color: Blue, Size: L"},
-        # {"name": "samsung television", "image": "https://pin.it/6bukAcfm5", "price": "$70", "details": "Color: Green, Size: S"},
-        #  {"name": "Apple television", "image": "https://pin.it/6bukAcfm5", "price": "$100", "details": "Color: Black, Size: S"},
          {"id": "ORD123", "name": "iPhone 14 Pro", "image": "https://pin.it/6bukAcfm5", "price": "$999", "details": "Color: Red, Size: M"},
         {"id": "ORD456", "name": "Samsung Galaxy S23", "image": "https://pin.it/6bukAcfm5", "price": "$899", "details": "Color: Blue, Size: L"},
         {"id": "ORD789", "name": "MacBook Air M2", "image": "https://pin.it/6bukAcfm5", "price": "$1199", "details": "Color: Green, Size: S"},
         {"id": "ORD789", "name": "MacBook Air M2", "image": "https://pin.it/6bukAcfm5", "price": "$1199", "details": "Color: Green, Size: S"},
 
     ]
+
+# Mock product database - for compare module
+
+compare_product_db = {
+    "iphone 13": {
+        "price": "$799",
+        "features": "6.1\" Display, A15 Bionic Chip, Dual Camera",
+        "image": "https://pin.it/6bukAcfm5"  # Add image link
+    },
+    "samsung galaxy s21": {
+        "price": "$749",
+        "features": "6.2\" Display, Exynos 2100, Triple Camera",
+        "image": "https://pin.it/6bukAcfm5"  # Add image link
+    },
+    "google pixel 6": {
+        "price": "$599",
+        "features": "6.4\" Display, Google Tensor, Dual Camera",
+        "image": "https://pin.it/6bukAcfm5"  # Add image link
+    },
+    "oneplus 9": {
+        "price": "$729",
+        "features": "6.55\" Display, Snapdragon 888, Triple Camera",
+        "image": "https://pin.it/6bukAcfm5"  # Add image link
+    },
+    "xiaomi mi 11": {
+        "price": "$699",
+        "features": "6.81\" Display, Snapdragon 888, Triple Camera",
+        "image": "https://pin.it/6bukAcfm5"  # Add image link
+    }
+}
 
 
 # Mock data for products

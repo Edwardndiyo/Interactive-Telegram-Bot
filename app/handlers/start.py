@@ -9,7 +9,7 @@ async def start(update: Update, context: CallbackContext):
         [InlineKeyboardButton("User Profile 👤", callback_data="profile"), 
          InlineKeyboardButton("Orders 📦", callback_data="orders")],
         [InlineKeyboardButton("AI Assistant 🤖", callback_data="ai_assistant"),
-         InlineKeyboardButton("Quick Comparison ⚖️", callback_data="compare")]         
+         InlineKeyboardButton("Quick Comparison ⚖️", callback_data="compare_product")]         
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 

@@ -1,178 +1,35 @@
-# from fastapi import FastAPI
-# import telegram
-# from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-# from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler
-# import os
-# from dotenv import load_dotenv
+# including the profile.py module, works well - 
 
-# app = FastAPI()
-# load_dotenv()
-# TOKEN = os.getenv("BOT_TOKEN")
-# bot = telegram.Bot(token=TOKEN)
-
-# # Mock database with multi-level categories
-# products_db = {
-#     "gadgets": {
-#         "Smartphones": {
-#             "Samsung": [
-#                 {"id": 1, "name": "Samsung Galaxy S23", "price": "$1000", "specs": "128GB, 8GB RAM, 5G", "image": "https://example.com/s23.jpg"},
-#                 {"id": 2, "name": "Samsung Galaxy A54", "price": "$500", "specs": "128GB, 6GB RAM, 4G", "image": "https://example.com/a54.jpg"},
-#             ],
-#             "Apple": [
-#                 {"id": 3, "name": "iPhone 14 Pro", "price": "$1200", "specs": "256GB, 6GB RAM, iOS", "image": "https://example.com/iphone14pro.jpg"},
-#                 {"id": 4, "name": "iPhone SE", "price": "$600", "specs": "64GB, 4GB RAM, iOS", "image": "https://example.com/iphonese.jpg"},
-#             ]
-#         },
-#         "Smartwatches": {
-#             "Samsung": [
-#                 {"id": 5, "name": "Samsung Galaxy Watch 5", "price": "$350", "specs": "40mm, LTE", "image": "https://example.com/galaxywatch5.jpg"}
-#             ],
-#             "Apple": [
-#                 {"id": 6, "name": "Apple Watch Series 8", "price": "$500", "specs": "GPS, 44mm", "image": "https://example.com/applewatch8.jpg"}
-#             ]
-#         }
-#     }
-# }
-
-# # Store user navigation state
-# user_state = {}
-
-# async def start(update: Update, context: CallbackContext):
-#     """ Display main menu """
-#     keyboard = [
-#         [InlineKeyboardButton("🔍 Search Product", callback_data="search_product")],
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.message.reply_text("Welcome to the bot! Select an option:", reply_markup=reply_markup)
-
-# async def search_product(update: Update, context: CallbackContext):
-#     """ Show top-level product categories """
-#     keyboard = [[InlineKeyboardButton("📱 Gadgets", callback_data="category_gadgets")]]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await update.callback_query.message.reply_text("Select a category:", reply_markup=reply_markup)
-
-# async def handle_category_selection(update: Update, context: CallbackContext):
-#     """ Handle main category selection (e.g., Gadgets) """
-#     query = update.callback_query
-#     category = query.data.split("_")[1]
-
-#     # Store user's navigation history
-#     user_state[query.message.chat_id] = {"path": [category]}
-
-#     # Get subcategories (e.g., Smartphones, Smartwatches)
-#     subcategories = products_db[category].keys()
-#     keyboard = [[InlineKeyboardButton(f"{sub}", callback_data=f"subcategory_{sub}")] for sub in subcategories]
-#     keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back")])
-    
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await query.message.reply_text("Select a subcategory:", reply_markup=reply_markup)
-
-# async def handle_subcategory_selection(update: Update, context: CallbackContext):
-#     """ Handle subcategory selection (e.g., Smartphones) """
-#     query = update.callback_query
-#     subcategory = query.data.split("_")[1]
-    
-#     user_id = query.message.chat_id
-#     user_state[user_id]["path"].append(subcategory)
-
-#     # Get available brands
-#     brands = products_db["gadgets"][subcategory].keys()
-#     keyboard = [[InlineKeyboardButton(brand, callback_data=f"brand_{brand}")] for brand in brands]
-#     keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back")])
-
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await query.message.reply_text(f"Select a brand for {subcategory}:", reply_markup=reply_markup)
-
-# async def handle_brand_selection(update: Update, context: CallbackContext):
-#     """ Handle brand selection (e.g., Samsung, Apple) """
-#     query = update.callback_query
-#     brand = query.data.split("_")[1]
-
-#     user_id = query.message.chat_id
-#     user_state[user_id]["path"].append(brand)
-
-#     # Get available models
-#     category, subcategory = user_state[user_id]["path"][:2]
-#     models = products_db[category][subcategory][brand]
-
-#     keyboard = [[InlineKeyboardButton(model["name"], callback_data=f"model_{model['id']}")] for model in models]
-#     keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back")])
-
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     await query.message.reply_text(f"Select a model from {brand}:", reply_markup=reply_markup)
-
-# async def handle_model_selection(update: Update, context: CallbackContext):
-#     """ Display selected product details """
-#     query = update.callback_query
-#     model_id = int(query.data.split("_")[1])
-
-#     user_id = query.message.chat_id
-#     category, subcategory, brand = user_state[user_id]["path"][:3]
-    
-#     # Find the selected product
-#     selected_product = next((p for p in products_db[category][subcategory][brand] if p["id"] == model_id), None)
-#     if selected_product:
-#         message = f"📌 *{selected_product['name']}*\n💰 Price: {selected_product['price']}\n🛠 Specs: {selected_product['specs']}"
-#         keyboard = [[InlineKeyboardButton("🛒 Order Now", callback_data=f"order_{model_id}")]]
-#         keyboard.append([InlineKeyboardButton("🔙 Back", callback_data="back")])
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-
-#         await context.bot.send_photo(
-#             chat_id=user_id,
-#             photo=selected_product["image"],
-#             caption=message,
-#             parse_mode="Markdown",
-#             reply_markup=reply_markup
-#         )
-
-# async def handle_back(update: Update, context: CallbackContext):
-#     """ Handle back navigation """
-#     query = update.callback_query
-#     user_id = query.message.chat_id
-
-#     if user_id in user_state and user_state[user_id]["path"]:
-#         user_state[user_id]["path"].pop()  # Remove last selection
-
-#         if not user_state[user_id]["path"]:  
-#             await search_product(update, context)  # Go back to category selection
-#         else:
-#             last_step = user_state[user_id]["path"][-1]
-
-#             if last_step in products_db["gadgets"]:
-#                 await handle_category_selection(update, context)
-#             elif last_step in ["Smartphones", "Smartwatches"]:
-#                 await handle_subcategory_selection(update, context)
-#             else:
-#                 await handle_brand_selection(update, context)
-#     else:
-#         await start(update, context)  # Default fallback
-
-# # Register handlers
-# app = Application.builder().token(TOKEN).build()
-# app.add_handler(CommandHandler("start", start))
-# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
-# app.add_handler(CallbackQueryHandler(handle_category_selection, pattern="^category_"))
-# app.add_handler(CallbackQueryHandler(handle_subcategory_selection, pattern="^subcategory_"))
-# app.add_handler(CallbackQueryHandler(handle_brand_selection, pattern="^brand_"))
-# app.add_handler(CallbackQueryHandler(handle_model_selection, pattern="^model_"))
-# app.add_handler(CallbackQueryHandler(handle_back, pattern="^back$"))
-
-# if __name__ == "__main__":
-#     app.run_polling()
-
-
-# first implementation before attempting to make it modular up here
-
-
-
-
-# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+# from telegram import Update
+# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 # from config import TOKEN
 # from handlers.start import start
-# from handlers.explore import explore_product, explore_handlers  # Import the handler list
+# from handlers.explore import explore_product, explore_handlers
 # from handlers.search import search_product, search_handlers
-# from handlers.orders import orders_handlers  # Import the orders handlers
-# from services.authentication import authenticate_user
+# from handlers.orders import orders_handlers
+# from handlers.profile import profile_handlers  # Import the profile handlers
+
+# # Global message handler to dispatch messages based on state
+# async def handle_global_message(update: Update, context: CallbackContext):
+#     """Dispatch messages to the appropriate module based on the current state."""
+#     state = context.user_data.get("state")
+#     print(f"Current state: {state}")  # Debugging
+
+#     if state and state.startswith("orders:"):
+#         # Forward to orders.py
+#         from handlers.orders import handle_message
+#         await handle_message(update, context)
+#     elif state and state.startswith("search:"):
+#         # Forward to search.py
+#         from handlers.search import handle_product_name
+#         await handle_product_name(update, context)
+#     elif state and state.startswith("profile:"):
+#         # Forward to profile.py
+#         from handlers.profile import handle_profile_message
+#         await handle_profile_message(update, context)
+#     else:
+#         # Handle unexpected messages
+#         await update.message.reply_text("Please start the process by selecting an option from the menu.")
 
 # # Initialize the bot application
 # app = Application.builder().token(TOKEN).build()
@@ -186,18 +43,24 @@
 # # Register the search_product handler
 # app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
 
-
 # # Register all handlers from explore.py
 # for handler in explore_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from orders.py
+# for handler in orders_handlers:
 #     app.add_handler(handler)
 
 # # Register all handlers from search.py
 # for handler in search_handlers:
 #     app.add_handler(handler)
 
-# # Register all handlers from orders.py
-# for handler in orders_handlers:
+# # Register all handlers from profile.py
+# for handler in profile_handlers:
 #     app.add_handler(handler)
+
+# # Register the global message handler
+# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))
 
 # # Run the bot
 # if __name__ == "__main__":
@@ -207,13 +70,146 @@
 
 
 
-from telegram import Update
+
+# Error handling / reverting to start function when command isnt recognized
+
+# from telegram import Update
+# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
+# from config import TOKEN
+# from handlers.start import start  # Import the start function
+# from handlers.explore import explore_product, explore_handlers
+# from handlers.search import search_product, search_handlers
+# from handlers.orders import orders_handlers
+# from handlers.profile import profile_handlers
+# from handlers.compare import compare_product, compare_handlers
+# from handlers.ai_assistant import support, support_handlers 
+# import logging
+
+# # Configure logging
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
+
+# # Global message handler to dispatch messages based on state
+# async def handle_global_message(update: Update, context: CallbackContext):
+#     """Dispatch messages to the appropriate module based on the current state."""
+#     state = context.user_data.get("state")
+#     print(f"Current state: {state}")  # Debugging
+
+#     if state and state.startswith("orders:"):
+#         from handlers.orders import handle_message
+#         await handle_message(update, context)
+#     elif state and state.startswith("search:"):
+#         from handlers.search import handle_product_name
+#         await handle_product_name(update, context)
+#     elif state and state.startswith("profile:"):
+#         from handlers.profile import handle_profile_message
+#         await handle_profile_message(update, context)
+#     elif state and state.startswith("compare:"):
+#         from handlers.compare import handle_product_input
+#         await handle_product_input(update, context)
+#     else:
+#         # If no valid state is found, call the unrecognized command handler
+#         await handle_unrecognized_command(update, context)
+
+# # Handler for unrecognized commands
+# async def handle_unrecognized_command(update: Update, context: CallbackContext):
+#     """Handles any unrecognized command and displays the main menu."""
+#     menu_text = (
+#         "⚠️ Sorry, I didn't understand that command.\n"
+#         "Please choose from the menu below:"
+#     )
+    
+#     # Send the main menu using the start function
+#     await start(update, context)
+
+# # Global error handler
+# async def error_handler(update: Update, context: CallbackContext):
+#     """Handles unexpected errors globally."""
+#     logger.error(f"An error occurred: {context.error}")
+
+#     error_message = (
+#         "⚠️ Oops! Something went wrong.\n"
+#         "Please try again later or select an option from the menu."
+#     )
+    
+#     try:
+#         await update.message.reply_text(error_message)
+#     except Exception:
+#         pass  # Avoid crashes if the error occurs outside a message context
+
+# # Initialize the bot application
+# app = Application.builder().token(TOKEN).build()
+
+# # Register the /start command handler
+# app.add_handler(CommandHandler("start", start))
+
+# # Register the explore_product handler
+# app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
+
+# # Register the search_product handler
+# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
+
+# # Register the compare_product handler
+# app.add_handler(CallbackQueryHandler(compare_product, pattern="^compare_product$"))
+
+# # Register the support handler
+# app.add_handler(CallbackQueryHandler(support, pattern="^ai_assistant$"))
+
+# # Register all handlers from explore.py
+# for handler in explore_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from orders.py
+# for handler in orders_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from search.py
+# for handler in search_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from profile.py
+# for handler in profile_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from compare.py
+# for handler in compare_handlers:
+#     app.add_handler(handler)
+
+# # Register all handlers from ai_assistant.py
+# for handler in support_handlers:
+#     app.add_handler(handler)
+
+# # Register the global message handler
+# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))
+
+# # Register the error handler
+# app.add_error_handler(error_handler)
+
+# # Run the bot
+# if __name__ == "__main__":
+#     app.run_polling()
+
+
+
+
+
+
+# adding start button at the bottom of the screen - 
+from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 from config import TOKEN
-from handlers.start import start
+from handlers.start import start  # Import the start function
 from handlers.explore import explore_product, explore_handlers
 from handlers.search import search_product, search_handlers
 from handlers.orders import orders_handlers
+from handlers.profile import profile_handlers
+from handlers.compare import compare_product, compare_handlers
+from handlers.ai_assistant import support, support_handlers 
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Global message handler to dispatch messages based on state
 async def handle_global_message(update: Update, context: CallbackContext):
@@ -222,28 +218,72 @@ async def handle_global_message(update: Update, context: CallbackContext):
     print(f"Current state: {state}")  # Debugging
 
     if state and state.startswith("orders:"):
-        # Forward to orders.py
         from handlers.orders import handle_message
         await handle_message(update, context)
     elif state and state.startswith("search:"):
-        # Forward to search.py
         from handlers.search import handle_product_name
         await handle_product_name(update, context)
+    elif state and state.startswith("profile:"):
+        from handlers.profile import handle_profile_message
+        await handle_profile_message(update, context)
+    elif state and state.startswith("compare:"):
+        from handlers.compare import handle_product_input
+        await handle_product_input(update, context)
     else:
-        # Handle unexpected messages
-        await update.message.reply_text("Please start the process by selecting an option from the menu.")
+        # If no valid state is found, call the unrecognized command handler
+        await handle_unrecognized_command(update, context)
+
+# Handler for unrecognized commands
+async def handle_unrecognized_command(update: Update, context: CallbackContext):
+    """Handles any unrecognized command and displays the main menu."""
+    menu_text = (
+        "⚠️ Sorry, I didn't understand that command.\n"
+        "Please choose from the menu below:"
+    )
+    
+    # Send the main menu using the start function
+    await start(update, context)
+
+# Global error handler
+async def error_handler(update: Update, context: CallbackContext):
+    """Handles unexpected errors globally."""
+    logger.error(f"An error occurred: {context.error}")
+
+    error_message = (
+        "⚠️ Oops! Something went wrong.\n"
+        "Please try again later or select an option from the menu."
+    )
+    
+    try:
+        await update.message.reply_text(error_message)
+    except Exception:
+        pass  # Avoid crashes if the error occurs outside a message context
+
+async def set_bot_commands(application):
+    """Set a persistent 'Menu' button in the bot's command list."""
+    commands = [
+        BotCommand("menu", "Open the main menu"),  # Persistent button for menu
+    ]
+    await application.bot.set_my_commands(commands)
 
 # Initialize the bot application
-app = Application.builder().token(TOKEN).build()
+app = Application.builder().token(TOKEN).post_init(set_bot_commands).build()
 
-# Register the /start command handler
+# Register the /start and /menu command handlers
 app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("menu", start))  # Alias for the Menu button
 
 # Register the explore_product handler
 app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
 
 # Register the search_product handler
 app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
+
+# Register the compare_product handler
+app.add_handler(CallbackQueryHandler(compare_product, pattern="^compare_product$"))
+
+# Register the support handler
+app.add_handler(CallbackQueryHandler(support, pattern="^ai_assistant$"))
 
 # Register all handlers from explore.py
 for handler in explore_handlers:
@@ -257,8 +297,23 @@ for handler in orders_handlers:
 for handler in search_handlers:
     app.add_handler(handler)
 
+# Register all handlers from profile.py
+for handler in profile_handlers:
+    app.add_handler(handler)
+
+# Register all handlers from compare.py
+for handler in compare_handlers:
+    app.add_handler(handler)
+
+# Register all handlers from ai_assistant.py
+for handler in support_handlers:
+    app.add_handler(handler)
+
 # Register the global message handler
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))
+
+# Register the error handler
+app.add_error_handler(error_handler)
 
 # Run the bot
 if __name__ == "__main__":
