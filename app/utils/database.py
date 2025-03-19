@@ -4,6 +4,7 @@ users_db = {
         "name": "Edward",
         "email": "ndiyoedward@gmail.com",  # Add email to user data
         "otp": "123456",
+        "phone_number": "+2348073342004",
         "date_joined": "2023-01-01",  # Add date_joined
         "reward_points": 100,  # Add reward_points
         "orders": {

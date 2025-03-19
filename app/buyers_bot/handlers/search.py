@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
-from handlers.start import start  # Import the start function
-from utils.database import fetch_matching_products
+from .start import start  # Import the start function
+from app.utils.database import fetch_matching_products
 
 
 async def search_product(update: Update, context: CallbackContext):

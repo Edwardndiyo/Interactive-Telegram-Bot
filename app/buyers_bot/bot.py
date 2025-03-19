@@ -1,71 +1,3 @@
-# including the profile.py module, works well - 
-
-# from telegram import Update
-# from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
-# from config import TOKEN
-# from handlers.start import start
-# from handlers.explore import explore_product, explore_handlers
-# from handlers.search import search_product, search_handlers
-# from handlers.orders import orders_handlers
-# from handlers.profile import profile_handlers  # Import the profile handlers
-
-# # Global message handler to dispatch messages based on state
-# async def handle_global_message(update: Update, context: CallbackContext):
-#     """Dispatch messages to the appropriate module based on the current state."""
-#     state = context.user_data.get("state")
-#     print(f"Current state: {state}")  # Debugging
-
-#     if state and state.startswith("orders:"):
-#         # Forward to orders.py
-#         from handlers.orders import handle_message
-#         await handle_message(update, context)
-#     elif state and state.startswith("search:"):
-#         # Forward to search.py
-#         from handlers.search import handle_product_name
-#         await handle_product_name(update, context)
-#     elif state and state.startswith("profile:"):
-#         # Forward to profile.py
-#         from handlers.profile import handle_profile_message
-#         await handle_profile_message(update, context)
-#     else:
-#         # Handle unexpected messages
-#         await update.message.reply_text("Please start the process by selecting an option from the menu.")
-
-# # Initialize the bot application
-# app = Application.builder().token(TOKEN).build()
-
-# # Register the /start command handler
-# app.add_handler(CommandHandler("start", start))
-
-# # Register the explore_product handler
-# app.add_handler(CallbackQueryHandler(explore_product, pattern="^explore_product$"))
-
-# # Register the search_product handler
-# app.add_handler(CallbackQueryHandler(search_product, pattern="^search_product$"))
-
-# # Register all handlers from explore.py
-# for handler in explore_handlers:
-#     app.add_handler(handler)
-
-# # Register all handlers from orders.py
-# for handler in orders_handlers:
-#     app.add_handler(handler)
-
-# # Register all handlers from search.py
-# for handler in search_handlers:
-#     app.add_handler(handler)
-
-# # Register all handlers from profile.py
-# for handler in profile_handlers:
-#     app.add_handler(handler)
-
-# # Register the global message handler
-# app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))
-
-# # Run the bot
-# if __name__ == "__main__":
-#     app.run_polling()
-
 
 
 
@@ -195,16 +127,17 @@
 
 
 # adding start button at the bottom of the screen - 
+
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
-from config import TOKEN
-from handlers.start import start  # Import the start function
-from handlers.explore import explore_product, explore_handlers
-from handlers.search import search_product, search_handlers
-from handlers.orders import orders_handlers
-from handlers.profile import profile_handlers
-from handlers.compare import compare_product, compare_handlers
-from handlers.ai_assistant import support, support_handlers 
+from app.buyers_bot.config import TOKEN
+from app.buyers_bot.handlers.start import start  #,start_handlers  # Import the start function
+from app.buyers_bot.handlers.explore import explore_product, explore_handlers
+from app.buyers_bot.handlers.search import search_product, search_handlers
+from app.buyers_bot.handlers.orders import orders_handlers
+from app.buyers_bot.handlers.profile import profile_handlers
+from app.buyers_bot.handlers.compare import compare_product, compare_handlers
+from app.buyers_bot.handlers.ai_assistant import support, support_handlers 
 import logging
 
 # Configure logging
@@ -218,17 +151,20 @@ async def handle_global_message(update: Update, context: CallbackContext):
     print(f"Current state: {state}")  # Debugging
 
     if state and state.startswith("orders:"):
-        from handlers.orders import handle_message
+        from app.buyers_bot.handlers.orders import handle_message
         await handle_message(update, context)
     elif state and state.startswith("search:"):
-        from handlers.search import handle_product_name
+        from app.buyers_bot.handlers.search import handle_product_name
         await handle_product_name(update, context)
     elif state and state.startswith("profile:"):
-        from handlers.profile import handle_profile_message
+        from app.buyers_bot.handlers.profile import handle_profile_message
         await handle_profile_message(update, context)
     elif state and state.startswith("compare:"):
-        from handlers.compare import handle_product_input
+        from app.buyers_bot.handlers.compare import handle_product_input
         await handle_product_input(update, context)
+    # elif state and state.startswith("start:"):
+    #     from handlers.start import handle_phone_input
+    #     await handle_phone_input(update, context)
     else:
         # If no valid state is found, call the unrecognized command handler
         await handle_unrecognized_command(update, context)
@@ -308,6 +244,10 @@ for handler in compare_handlers:
 # Register all handlers from ai_assistant.py
 for handler in support_handlers:
     app.add_handler(handler)
+
+# register start handlers
+# for handler in start_handlers:
+#     app.add_handler(handler)
 
 # Register the global message handler
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_message))

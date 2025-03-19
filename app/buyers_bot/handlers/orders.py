@@ -1,9 +1,9 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, timedelta
-from utils.database import users_db
+from app.utils.database import users_db
 
-from services.authentication import start_authentication, handle_email_input, handle_otp_input
+from app.services.authentication import start_authentication,  handle_otp_input, handle_email_input
 
 # Store authentication status (user_id: expiry_time)
 # authenticated_users = {}

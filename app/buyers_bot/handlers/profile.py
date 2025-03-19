@@ -1,9 +1,9 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, timedelta
-from utils.database import users_db
+from app.utils.database import users_db
 
-from services.authentication import start_authentication, handle_email_input, handle_otp_input
+from app.services.authentication import start_authentication, handle_otp_input, handle_email_input
 
 
 # authenticated_users = {}
@@ -135,7 +135,7 @@ async def handle_profile_message(update: Update, context: CallbackContext):
     print(f"Received message: {update.message.text}")  # Debugging: Print the received message
 
     if state == "profile:awaiting_email":
-        # await handle_email(update, context)
+    #     # await handle_email(update, context)
         await handle_profile_email(update, context)
     elif state == "profile:awaiting_otp":
         # await handle_otp(update, context)

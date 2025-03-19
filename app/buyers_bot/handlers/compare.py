@@ -1,6 +1,6 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackContext, MessageHandler, filters, CallbackQueryHandler
-from utils.database import compare_product_db
+from app.utils.database import compare_product_db
 
 async def compare_product(update: Update, context: CallbackContext):
     """Prompt the user to enter two product names."""

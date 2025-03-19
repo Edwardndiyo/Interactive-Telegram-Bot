@@ -1,12 +1,13 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler
-from utils.database import products_db
-from utils.helpers import user_selected_category
-from handlers.start import start
+from app.utils.database import products_db
+from .start import start
 
 def chunk_buttons(buttons, row_size=2):
     """Split buttons into rows of specified size."""
     return [buttons[i:i + row_size] for i in range(0, len(buttons), row_size)]
+
+user_selected_category = {}
 
 # Step 1: User Initiates Search
 async def explore_product(update: Update, context: CallbackContext):
