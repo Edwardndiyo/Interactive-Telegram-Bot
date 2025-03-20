@@ -12,83 +12,6 @@ from app.services.authentication import start_authentication,  handle_otp_input,
 def chunk_buttons(buttons, row_size=2):
     return [buttons[i:i + row_size] for i in range(0, len(buttons), row_size)]
 
-# Step 1: Start Orders Flow
-# async def start_orders(update: Update, context: CallbackContext):
-#     """Prompt user to enter their email."""
-#     if update.callback_query:
-#         query = update.callback_query
-#         await query.answer()
-#         message = query.message
-#     else:
-#         message = update.message
-
-#     await message.reply_text("Please enter your registered email address:")
-
-#     # Set the state to wait for email
-#     context.user_data["state"] = "orders:awaiting_email"
-
-# # Step 2: Handle Email Input
-# async def handle_email(update: Update, context: CallbackContext):
-#     """Handle email input."""
-#     if context.user_data.get("state") != "orders:awaiting_email":
-#         return  # Ignore if not in the correct state
-
-#     email = update.message.text.strip().lower()
-#     print(f"User entered email: {email}")  # Debugging: Print the entered email
-
-#     # Look up the email in the database
-#     user_data = users_db.get(email)
-#     print(f"User data found: {user_data}")  # Debugging: Print the user data
-
-#     if user_data is not None:  # Explicitly check if user_data is not None
-#         # Greet the user and send OTP
-#         context.user_data["email"] = email
-#         context.user_data["name"] = user_data["name"]
-#         await update.message.reply_text(
-#             f"Welcome {user_data['name']}, we have sent an OTP to your email. Please provide it here."
-#         )
-
-#         # Set the state to wait for OTP
-#         context.user_data["state"] = "orders:awaiting_otp"
-#     else:
-#         # Prompt the user to register
-#         keyboard = [
-#             [InlineKeyboardButton("🌐 Register on Website", url="https://www.deimr.com")],
-#             [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")],
-#         ]
-#         reply_markup = InlineKeyboardMarkup(keyboard)
-#         await update.message.reply_text(
-#             "❌ Email not found. Please register on our website to use the bot's services.",
-#             reply_markup=reply_markup,
-#         )
-
-# # Step 3: Handle OTP Input
-# async def handle_otp(update: Update, context: CallbackContext):
-#     """Handle OTP input."""
-#     if context.user_data.get("state") != "orders:awaiting_otp":
-#         return  # Ignore if not in the correct state
-
-#     otp = update.message.text
-    # email = context.user_data.get("email")
-    # user_data = users_db.get(email)
-
-#     if user_data and otp == user_data["otp"]:
-#         # Authenticate the user
-#         user_id = update.effective_user.id
-#         authenticated_users[user_id] = datetime.now() + timedelta(hours=1)  # 1-hour session
-#         await update.message.reply_text("✅ Authentication successful! You can now access your orders for the next 1 hour.")
-
-#         # Clear the awaiting_otp state
-#         context.user_data.pop("state", None)
-
-#         await show_orders_menu(update, context)
-#     else:
-#         await update.message.reply_text("❌ Invalid OTP. Please try again.")
-
-
-
-# everything up hre works perfectly updating code for modularity sake and centrlized authentication system
-
 # Start Orders Flow
 async def start_orders(update: Update, context: CallbackContext):
     await start_authentication(update, context, "orders")
@@ -338,11 +261,9 @@ orders_handlers = [
     CallbackQueryHandler(track_order, pattern="^track_order$"),
      CallbackQueryHandler(contact_seller, pattern="^contact_seller_"),
     CallbackQueryHandler(chat_with_seller, pattern="^chat_with_seller$"),
-    # MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message),
 ]
 
 
 
-# Up here works perfectly, updated the file for modularity in implementing authentication
 
 

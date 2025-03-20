@@ -19,6 +19,16 @@ users_db = {
     }
 }
 
+# Mock database to store messages (replace with your actual database)
+messages_db = {
+    "buyer1@example.com": [
+        {"sender": "buyer1@example.com", "message": "Hi, is this available?", "timestamp": "2023-10-01 10:00:00"},
+        {"sender": "seller@example.com", "message": "Yes, it is!", "timestamp": "2023-10-01 10:05:00"},
+    ],
+    "buyer2@example.com": [
+        {"sender": "buyer2@example.com", "message": "What's the price?", "timestamp": "2023-10-02 12:00:00"},
+    ],
+}
 
 # Mock function to fetch matching products (replace with actual database query)
 def fetch_matching_products(product_name: str):

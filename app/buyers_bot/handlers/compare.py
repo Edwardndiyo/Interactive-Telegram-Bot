@@ -7,14 +7,31 @@ async def compare_product(update: Update, context: CallbackContext):
     if update.callback_query:
         query = update.callback_query
         await query.answer()
-        message = query.message
-    else:
-        message = update.message
+        # Edit the existing message to display the comparison prompt
+        await query.edit_message_text(
+            "Enter the names of two products separated by a comma.\n\n"
+            "Example: iPhone 13, Samsung Galaxy S21\n\n\n\n\n"
+            
+            
 
-    await message.reply_text(
-        "Enter the names of two products separated by a comma.\n\n"
-        "Example: iPhone 13, Samsung Galaxy S21"
-    )
+            "OR...",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+            ])
+        )
+    else:
+        # If triggered by a direct message (e.g., /compare command)
+        await update.message.reply_text(
+            "Enter the names of two products separated by a comma.\n\n"
+            "Example: iPhone 13, Samsung Galaxy S21\n\n\n\n\n"
+            
+            
+
+            "OR...",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")]
+            ])
+        )
     # Set the state to wait for product names
     context.user_data["state"] = "compare:awaiting_products"
 
@@ -77,6 +94,7 @@ async def handle_product_input(update: Update, context: CallbackContext):
         f"📌 {product2}\n"
         f"- Price: {product2_data['price']}\n"
         f"- Features: {product2_data['features']}\n\n"
+        "🔙 Back to Main Menu"
     )
 
     # Create buttons for "Request Images" and "Back to Main Menu"
@@ -133,7 +151,7 @@ async def handle_request_images(update: Update, context: CallbackContext):
             f"- Features: {product2_data['features']}"
         ),
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🛒 Order Now",  url="https://example.com/order")]
+            [InlineKeyboardButton("🛒 Order Now", url="https://example.com/order")]
         ])
     )
 
@@ -143,8 +161,25 @@ async def handle_request_images(update: Update, context: CallbackContext):
 
     await query.message.reply_text("You can now return to the main menu.", reply_markup=reply_markup)
 
+async def handle_main_menu(update: Update, context: CallbackContext):
+    """Handle the main menu button click."""
+    query = update.callback_query
+    await query.answer()
+
+    # Clear the state
+    context.user_data.pop("state", None)
+
+    # Send a message to the user indicating they are back to the main menu
+    await query.edit_message_text(
+        "You are now back to the main menu.",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Compare Products", callback_data="compare_product")]
+        ])
+    )
+
 # Register handlers
 compare_handlers = [
     CallbackQueryHandler(compare_product, pattern="^compare_product$"),
     CallbackQueryHandler(handle_request_images, pattern="^request_images:"),
+    CallbackQueryHandler(handle_main_menu, pattern="^main_menu$"),
 ]
