@@ -36,9 +36,18 @@
 
 
 
+
+
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler, MessageHandler, filters
 from app.utils.database import users_db
+
+# Helper function to normalize phone numbers
+def normalize_phone_number(phone_number):
+    """Normalize the phone number to ensure it starts with a '+'."""
+    if not phone_number.startswith("+"):
+        return f"+{phone_number}"
+    return phone_number
 
 async def start(update: Update, context: CallbackContext):
     """Display main menu with options and handle phone number validation."""
@@ -47,9 +56,11 @@ async def start(update: Update, context: CallbackContext):
 
     # Check if the user has already shared their phone number
     user_phone_number = context.user_data.get("phone_number")
+    if user_phone_number:
+        user_phone_number = normalize_phone_number(user_phone_number)  # Normalize the phone number
     print(f"User phone number in context: {user_phone_number}")  # Debugging
 
-    # Search for the user in the database using the phone number
+    # Search for the user in the database using the normalized phone number
     user_data = None
     for user in users_db.values():
         if user.get("phone_number") == user_phone_number:
@@ -98,13 +109,14 @@ async def start(update: Update, context: CallbackContext):
 async def handle_contact(update: Update, context: CallbackContext):
     """Handle the user's shared contact information."""
     user_phone_number = update.message.contact.phone_number
-    print(f"User shared phone number: {user_phone_number}")  # Debugging
-    context.user_data["phone_number"] = user_phone_number
+    normalized_phone_number = normalize_phone_number(user_phone_number)  # Normalize the phone number
+    print(f"User shared phone number: {user_phone_number} (Normalized: {normalized_phone_number})")  # Debugging
+    context.user_data["phone_number"] = normalized_phone_number  # Store the normalized phone number
 
-    # Search for the user in the database using the phone number
+    # Search for the user in the database using the normalized phone number
     user_data = None
     for user in users_db.values():
-        if user.get("phone_number") == user_phone_number:
+        if user.get("phone_number") == normalized_phone_number:
             user_data = user
             break
 
@@ -135,4 +147,3 @@ async def handle_contact(update: Update, context: CallbackContext):
 # Register handlers
 start_handler = CommandHandler("start", start)
 main_menu_handler = CallbackQueryHandler(start, pattern="^main_menu$")
-
