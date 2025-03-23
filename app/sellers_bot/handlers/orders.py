@@ -2,7 +2,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, timedelta
 from app.utils.database import users_db
-from app.services.authentication import start_authentication, handle_otp_input, handle_email_input
+from app.services.authentication import start_authentication, handle_otp_input
 import logging
 
 # Set up logging
@@ -15,71 +15,14 @@ def chunk_buttons(buttons, row_size=2):
 
 # Start Orders Flow
 async def start_orders(update: Update, context: CallbackContext):
-    """Start the orders flow and set the state to await email."""
+    """Start the orders authentication flow."""
     await start_authentication(update, context, "orders")
-    context.user_data["state"] = "orders:awaiting_email"  # Explicitly set the state
-    logger.info("Orders flow started. State set to 'orders:awaiting_email'.")
-
-# Handle Email Input for Orders
-async def handle_orders_email(update: Update, context: CallbackContext):
-    """Handle email input and transition to the OTP state."""
-    email = update.message.text.strip()
-    logger.info(f"Received email input: {email}")
-
-    # Validate the email
-    if not email or "@" not in email:
-        await update.message.reply_text("❌ Invalid email. Please enter a valid email address.")
-        return
-
-    # Check if the email exists in the database
-    if email not in users_db:
-        # Create buttons for "Register on Website" and "Back to Main Menu"
-        keyboard = [
-            [InlineKeyboardButton("🌐 Register on Website", url="https://example.com/register")],
-            [InlineKeyboardButton("🔙 Back to Main Menu", callback_data="main_menu")],
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await update.message.reply_text(
-            "❌ Email not found. Please register or try again.",
-            reply_markup=reply_markup,
-        )
-        return
-
-    # Store the email in context.user_data
-    context.user_data["email"] = email
-
-    # Transition to the OTP state
-    context.user_data["state"] = "orders:awaiting_otp"
-    logger.info(f"State updated to: {context.user_data['state']}")
-
-    # Prompt the user to enter the OTP
-    await update.message.reply_text("Please enter the OTP sent to your email.")
-
+    logger.info("Orders flow started. State set to 'orders:awaiting_otp'.")
 
 # Handle OTP Input for Orders
 async def handle_orders_otp(update: Update, context: CallbackContext):
-    """Handle OTP input and transition to the orders menu."""
-    otp = update.message.text.strip()
-    logger.info(f"Received OTP input: {otp}")
-
-    # Validate the OTP (add your OTP validation logic here)
-    email = context.user_data.get("email")
-    if not email:
-        await update.message.reply_text("❌ Email not found. Please restart the process.")
-        return
-
-    # Simulate OTP validation
-    if otp != "123456":  # Replace with your actual OTP validation logic
-        await update.message.reply_text("❌ Invalid OTP. Please try again.")
-        return
-
-    # Clear the OTP state
-    context.user_data.pop("state", None)
-    logger.info("OTP validated. State cleared.")
-
-    # Show the orders menu
-    await show_orders_menu(update, context)
+    """Handle OTP input for the orders module."""
+    await handle_otp_input(update, context, "orders", show_orders_menu)
 
 # Step 4: Show Orders Menu
 async def show_orders_menu(update: Update, context: CallbackContext):
@@ -245,9 +188,9 @@ async def handle_message(update: Update, context: CallbackContext):
     logger.info(f"Current state: {state}")
     logger.info(f"Received message: {update.message.text}")
 
-    if state == "orders:awaiting_email":
-        await handle_orders_email(update, context)
-    elif state == "orders:awaiting_otp":
+    # if state == "orders:awaiting_email":
+    #     await handle_orders_email(update, context)
+    if state == "orders:awaiting_otp":
         await handle_orders_otp(update, context)
     elif state == "orders:awaiting_order_id":
         await handle_order_id(update, context)

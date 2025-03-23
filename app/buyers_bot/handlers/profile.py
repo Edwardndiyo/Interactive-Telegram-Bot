@@ -1,26 +1,18 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
-from datetime import datetime, timedelta
-from app.utils.database import users_db
-
-from app.services.authentication import start_authentication, handle_otp_input, handle_email_input
-
-
-# authenticated_users = {}
-
+from app.services.authentication import start_authentication, handle_otp_input
 
 # Start Profile Flow
 async def start_profile(update: Update, context: CallbackContext):
+    """Start the profile authentication flow."""
     await start_authentication(update, context, "profile")
 
-# Handle Email Input for Profile
-async def handle_profile_email(update: Update, context: CallbackContext):
-    await handle_email_input(update, context, "profile")
-
+# Handle OTP Input for Profile
 async def handle_profile_otp(update: Update, context: CallbackContext):
+    """Handle OTP input for the profile module."""
     await handle_otp_input(update, context, "profile", display_profile)
 
-# Step 4: Display Profile Details
+# Display Profile Details
 async def display_profile(update: Update, context: CallbackContext, user_data):
     """Display the user's profile details."""
     name = user_data["name"]
@@ -36,7 +28,6 @@ async def display_profile(update: Update, context: CallbackContext, user_data):
         f"📧 Email: {email}\n"
         f"📅 Joined: {date_joined}\n"
         f"💰 Reward Points: {reward_points}\n\n"
-        
     )
 
     # Create a "Back to Main Menu" button
@@ -52,18 +43,14 @@ async def display_profile(update: Update, context: CallbackContext, user_data):
     else:
         await update.message.reply_text(profile_text, reply_markup=reply_markup)
 
-# Step 5: Dispatch Messages
+# Dispatch Messages
 async def handle_profile_message(update: Update, context: CallbackContext):
     """Dispatch messages to the appropriate handler based on the current state."""
     state = context.user_data.get("state")
     print(f"Current state: {state}")  # Debugging: Print the current state
     print(f"Received message: {update.message.text}")  # Debugging: Print the received message
 
-    if state == "profile:awaiting_email":
-    #     # await handle_email(update, context)
-        await handle_profile_email(update, context)
-    elif state == "profile:awaiting_otp":
-        # await handle_otp(update, context)
+    if state == "profile:awaiting_otp":
         await handle_profile_otp(update, context)
     else:
         # Handle unexpected messages

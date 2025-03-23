@@ -2,29 +2,38 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, timedelta
 from app.utils.database import users_db
+from app.services.authentication import start_authentication,  handle_otp_input
 
-from app.services.authentication import start_authentication,  handle_otp_input, handle_email_input
-
-# Store authentication status (user_id: expiry_time)
-# authenticated_users = {}
 
 # Helper function to chunk buttons into rows of 2
 def chunk_buttons(buttons, row_size=2):
     return [buttons[i:i + row_size] for i in range(0, len(buttons), row_size)]
 
 # Start Orders Flow
-async def start_orders(update: Update, context: CallbackContext):
-    await start_authentication(update, context, "orders")
 
-# Handle Email Input for Orders
-async def handle_orders_email(update: Update, context: CallbackContext):
-    await handle_email_input(update, context, "orders")
+# Start Orders Flow
+async def start_orders(update: Update, context: CallbackContext):
+    """Start the orders authentication flow."""
+    await start_authentication(update, context, "orders")
 
 # Handle OTP Input for Orders
 async def handle_orders_otp(update: Update, context: CallbackContext):
-    email = context.user_data.get("email")
-    user_data = users_db.get(email)
-    await handle_otp_input(update, context, "orders", await show_orders_menu(update, context))
+    """Handle OTP input for the orders module."""
+    await handle_otp_input(update, context, "orders", show_orders_menu)
+
+
+# async def start_orders(update: Update, context: CallbackContext):
+#     await start_authentication(update, context, "orders")
+
+# # Handle Email Input for Orders
+# async def handle_orders_email(update: Update, context: CallbackContext):
+#     await handle_email_input(update, context, "orders")
+
+# # Handle OTP Input for Orders
+# async def handle_orders_otp(update: Update, context: CallbackContext):
+#     email = context.user_data.get("email")
+#     user_data = users_db.get(email)
+#     await handle_otp_input(update, context, "orders", await show_orders_menu(update, context))
 
 # Step 4: Show Orders Menu
 async def show_orders_menu(update: Update, context: CallbackContext):
@@ -236,10 +245,10 @@ async def handle_message(update: Update, context: CallbackContext):
     print(f"Current state: {state}")  # Debugging: Print the current state
     print(f"Received message: {update.message.text}")  # Debugging: Print the received message
 
-    if state == "orders:awaiting_email":
-        # await handle_email(update, context)
-        await handle_orders_email(update, context)
-    elif state == "orders:awaiting_otp":
+    # if state == "orders:awaiting_email":
+    #     # await handle_email(update, context)
+    #     await handle_orders_email(update, context)
+    if state == "orders:awaiting_otp":
         # await handle_otp(update, context)
         await handle_orders_otp(update, context)
     elif state == "orders:awaiting_order_id":
