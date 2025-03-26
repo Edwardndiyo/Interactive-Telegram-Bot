@@ -2,7 +2,7 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from datetime import datetime, timedelta
 from app.utils.database import users_db
-from app.services.authentication import start_authentication, handle_otp_input
+from app.services.authentication import start_authentication, handle_otp_input, handle_email_input
 import logging
 
 # Set up logging
@@ -13,16 +13,31 @@ logger = logging.getLogger(__name__)
 def chunk_buttons(buttons, row_size=2):
     return [buttons[i:i + row_size] for i in range(0, len(buttons), row_size)]
 
+
 # Start Orders Flow
 async def start_orders(update: Update, context: CallbackContext):
-    """Start the orders authentication flow."""
     await start_authentication(update, context, "orders")
-    logger.info("Orders flow started. State set to 'orders:awaiting_otp'.")
+
+# Handle Email Input for Orders
+async def handle_orders_email(update: Update, context: CallbackContext):
+    await handle_email_input(update, context, "orders")
 
 # Handle OTP Input for Orders
 async def handle_orders_otp(update: Update, context: CallbackContext):
-    """Handle OTP input for the orders module."""
-    await handle_otp_input(update, context, "orders", show_orders_menu)
+    email = context.user_data.get("email")
+    user_data = users_db.get(email)
+    await handle_otp_input(update, context, "orders", await show_orders_menu(update, context))
+
+# # Start Orders Flow
+# async def start_orders(update: Update, context: CallbackContext):
+#     """Start the orders authentication flow."""
+#     await start_authentication(update, context, "orders")
+#     logger.info("Orders flow started. State set to 'orders:awaiting_otp'.")
+
+# # Handle OTP Input for Orders
+# async def handle_orders_otp(update: Update, context: CallbackContext):
+#     """Handle OTP input for the orders module."""
+#     await handle_otp_input(update, context, "orders", show_orders_menu)
 
 # Step 4: Show Orders Menu
 async def show_orders_menu(update: Update, context: CallbackContext):
@@ -188,9 +203,9 @@ async def handle_message(update: Update, context: CallbackContext):
     logger.info(f"Current state: {state}")
     logger.info(f"Received message: {update.message.text}")
 
-    # if state == "orders:awaiting_email":
-    #     await handle_orders_email(update, context)
-    if state == "orders:awaiting_otp":
+    if state == "orders:awaiting_email":
+        await handle_orders_email(update, context)
+    elif state == "orders:awaiting_otp":
         await handle_orders_otp(update, context)
     elif state == "orders:awaiting_order_id":
         await handle_order_id(update, context)

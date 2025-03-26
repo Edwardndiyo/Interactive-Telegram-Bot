@@ -1,7 +1,7 @@
 from telegram import Update, BotCommand
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, CallbackContext
 from app.buyers_bot.config import TOKEN
-from app.buyers_bot.handlers.start import start, handle_contact  #,start_handlers  # Import the start function
+from app.buyers_bot.handlers.start import start   #, handle_contact  
 from app.buyers_bot.handlers.explore import explore_product, explore_handlers
 from app.buyers_bot.handlers.search import search_product, search_handlers
 from app.buyers_bot.handlers.orders import orders_handlers
@@ -126,7 +126,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_global_me
 app.add_error_handler(error_handler)
 
 # contant handler for start module
-app.add_handler(MessageHandler(filters.CONTACT, handle_contact))  # Add this line
+# app.add_handler(MessageHandler(filters.CONTACT, handle_contact))  
 
 
 

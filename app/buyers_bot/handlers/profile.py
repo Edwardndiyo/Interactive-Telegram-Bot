@@ -1,11 +1,16 @@
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, MessageHandler, filters
-from app.services.authentication import start_authentication, handle_otp_input
+from app.services.authentication import start_authentication, handle_otp_input, handle_email_input
 
 # Start Profile Flow
 async def start_profile(update: Update, context: CallbackContext):
     """Start the profile authentication flow."""
     await start_authentication(update, context, "profile")
+
+# Handle Email input for profile
+async def handle_profile_email(update:Update, context: CallbackContext):
+    """Handle email input for the profile module."""
+    await handle_email_input(update, context, "profile")
 
 # Handle OTP Input for Profile
 async def handle_profile_otp(update: Update, context: CallbackContext):
@@ -50,7 +55,9 @@ async def handle_profile_message(update: Update, context: CallbackContext):
     print(f"Current state: {state}")  # Debugging: Print the current state
     print(f"Received message: {update.message.text}")  # Debugging: Print the received message
 
-    if state == "profile:awaiting_otp":
+    if state == "profile:awaiting_email":
+        await handle_profile_email(update, context)
+    elif state == "profile:awaiting_otp":
         await handle_profile_otp(update, context)
     else:
         # Handle unexpected messages
